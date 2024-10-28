@@ -1,0 +1,67 @@
+go athena
+
+line x loc=0.0 spac=0.1
+line x loc=0.2 spac=0.006
+line x loc=0.4 spac=0.006
+line x loc=0.6 spac=0.01
+
+line y loc=0.0 spac=0.002
+line y loc=0.2 spac=0.005
+line y loc=0.5 spac=0.05
+line y loc=0.8 spac=0.15
+
+init orientation=100 c.boron=1e14 space.mul=2
+
+# gate oxide grown
+
+diffuse time=11 temp=925 dryO2 press=1.0
+
+# deposition of aluminium metal / Aluminum metal deposition
+#deposit material=aluminum thick=0.2 divi=10
+deposit alumin thick=0.2 divi=10
+
+# etching of metal/Etching aluminum on the left side starting from pl.x=0.35
+# etch material=aluminum left pl.x =0.35
+etch alumin left p1.x =0.35
+#etch material=aluminum left 
+
+
+# Mirror the structure to the right
+structure mirror right
+
+# Define electrodes
+electrode name=gate x=0.5 y=-0.2
+electrode name=substrate backside
+
+# Save the structure for Atlas simulation
+structure outfile=moscap1.str
+
+# Plot structure
+tonyplot moscap1.str -set1 moscap1.set
+
+go atlas
+
+# Electrical simulation
+models cvt srh print
+contact name=gate
+
+# Define interface charges
+interface qf=3e10
+
+# Set method for solution
+method newton
+
+solve init
+
+#Apply the voltage to the gate and perform C-V analysis
+
+log outf=moscap2_1.log master
+solve Vgate=-2.5 Vstep=0.1 Vfinal=2.5 name=gate qscv nocurrent
+
+# Save the final simulated structure
+save outf=moscap2_1.str
+
+# Plot for CV curve
+tonyplot moscap2_1.log -set moscap2_1.log.set
+
+quit
